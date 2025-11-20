@@ -180,9 +180,13 @@ export default function App() {
           />
         ) : screen === 'onboarding' ? (
           <HomeScreen setScreen={(s) => {
-            setScreen(s);
-            if (s === 'onboardingFlow') navigate('/onboarding');
-            if (s === 'input') navigate('/input');
+            if (s === 'onboardingFlow') {
+              navigate('/onboarding');
+            } else if (s === 'input') {
+              navigate('/input');
+            } else {
+              setScreen(s);
+            }
           }} />
         ) : <Navigate to="/graph" replace />
         } />
