@@ -32,7 +32,11 @@ export const signUp = async (email: string, password: string) => {
     email,
     password,
   });
-  if (error) throw error;
+  if (error) {
+    console.error('Supabase SignUp Error:', error);
+    throw error;
+  }
+  console.log('Supabase: 회원가입 요청 성공', data);
   return data;
 };
 
@@ -45,6 +49,7 @@ export const signIn = async (email: string, password: string) => {
     password,
   });
   if (error) throw error;
+  console.log('Supabase: 로그인 요청 성공', data);
   return data;
 };
 
@@ -127,6 +132,7 @@ export const createNode = async (node: Node): Promise<Node> => {
     .single();
 
   if (error) throw error;
+  console.log('Supabase: 노드 생성 성공', data);
   return data;
 };
 
@@ -389,6 +395,7 @@ export const saveChatMessage = async (message: ChatMessage): Promise<void> => {
     });
 
   if (error) throw error;
+  console.log('Supabase: 채팅 메시지 저장 성공');
 };
 
 /**

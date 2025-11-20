@@ -39,6 +39,12 @@ export const AuthForm = ({ isSignUp, onSubmit, loading }: AuthFormProps) => {
       return;
     }
 
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError('유효한 이메일 주소를 입력해주세요.');
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {

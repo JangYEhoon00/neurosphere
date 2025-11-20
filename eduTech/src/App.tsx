@@ -133,6 +133,7 @@ export default function App() {
               }
               return { success: false, error: '로그인에 실패했습니다.' };
             } catch (error: any) {
+              console.error('Sign In Error:', error);
               return { success: false, error: error.message || '로그인 중 오류가 발생했습니다.' };
             }
           }}
@@ -257,7 +258,7 @@ export default function App() {
       )}
 
       {/* Global Chatbot - visible from main page onwards */}
-      {screen !== 'onboarding' && <Chatbot onSaveToGraph={handleSaveConceptToGraph} isDisabled={selectedNode !== null} />}
+      {screen !== 'onboarding' && screen !== 'auth' && screen !== 'onboardingFlow' && <Chatbot onSaveToGraph={handleSaveConceptToGraph} isDisabled={selectedNode !== null} />}
     </>
   );
 }
