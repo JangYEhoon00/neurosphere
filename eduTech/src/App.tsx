@@ -75,14 +75,15 @@ export default function App() {
     }
   }, [authLoading, user, screen]);
 
-  // Skip onboarding if user already has data AND completed onboarding before
+  // Skip onboarding if user already completed it before (has localStorage flag)
   useEffect(() => {
     const hasCompletedOnboarding = localStorage.getItem('hasCompletedOnboarding');
-    if (user && !graphLoading && screen === 'onboarding' && graphData.nodes.length > 0 && hasCompletedOnboarding === 'true') {
+    // Only skip if explicitly completed before
+    if (user && !graphLoading && screen === 'onboarding' && hasCompletedOnboarding === 'true') {
       setScreen('graph');
       navigate('/graph');
     }
-  }, [user, graphLoading, graphData.nodes.length, screen, navigate]);
+  }, [user, graphLoading, screen, navigate]);
 
   // Execute Save with Selected Directory/Category
   const handleFinalSave = (targetCategory: string) => {
