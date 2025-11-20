@@ -75,9 +75,10 @@ export default function App() {
     }
   }, [authLoading, user, screen]);
 
-  // Skip onboarding if user already has data
+  // Skip onboarding if user already has data AND completed onboarding before
   useEffect(() => {
-    if (user && !graphLoading && screen === 'onboarding' && graphData.nodes.length > 0) {
+    const hasCompletedOnboarding = localStorage.getItem('hasCompletedOnboarding');
+    if (user && !graphLoading && screen === 'onboarding' && graphData.nodes.length > 0 && hasCompletedOnboarding === 'true') {
       setScreen('graph');
       navigate('/graph');
     }
@@ -224,6 +225,7 @@ export default function App() {
             });
 
             addNodesAndLinks(newNodes, newLinks);
+            localStorage.setItem('hasCompletedOnboarding', 'true');
             setScreen('graph');
             navigate('/graph');
           }}
@@ -284,6 +286,7 @@ export default function App() {
           })}
           removeNode={removeNode}
           removeCategory={removeCategory}
+          addNodesAndLinks={addNodesAndLinks}
         />
         } />
 

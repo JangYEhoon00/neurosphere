@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { ScreenState, GraphData, Node, FolderStructure } from '../utils/types';
+import { ScreenState, GraphData, Node, FolderStructure, Link } from '../utils/types';
 import { ThreeGraph } from '../components/ThreeGraph';
 import { BackButton } from '../components/BackButton';
 import { GraphSidebar } from '../components/GraphSidebar';
-
+import { Plus } from 'lucide-react';
+import { generateUUID } from '../utils/uuid';
 
 interface GraphScreenProps {
   screen: ScreenState;
@@ -19,14 +20,43 @@ interface GraphScreenProps {
   startQuiz: () => void;
   removeNode: (nodeId: string) => void;
   removeCategory: (category: string) => void;
+  addNodesAndLinks: (nodes: Node[], links: Link[]) => void;
 }
 
 export const GraphScreen = ({ 
   screen, setScreen, folderData, toggleFolder, setSelectedNode, renameFolder, 
   selectedNode, toggleCategoryVisibility, hiddenCategories, graphData, startQuiz,
-  removeNode, removeCategory
+  removeNode, removeCategory, addNodesAndLinks
 }: GraphScreenProps) => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isAddingNode, setIsAddingNode] = useState(false);
+  const [newNodeLabel, setNewNodeLabel] = useState('');
+  const [newNodeCategory, setNewNodeCategory] = useState('');
+
+  const handleAddNode = () => {
+    if (!newNodeLabel.trim()) return;
+
+    const category = newNodeCategory.trim() || '일반';
+    const newNode: Node = {
+      id: generateUUID(),
+      label: newNodeLabel.trim(),
+      status: 'new',
+      val: 25,
+      category,
+      description: ''
+    };
+
+    const newLinks: Link[] = [];
+    // Link to first existing node or no links if empty
+    if (graphData.nodes.length > 0) {
+      newLinks.push({ source: graphData.nodes[0].id, target: newNode.id });
+    }
+
+    addNodesAndLinks([newNode], newLinks);
+    setNewNodeLabel('');
+    setNewNodeCategory('');
+    setIsAddingNode(false);
+  };
 
   return (
     <div className="h-screen bg-[#020617] relative overflow-hidden flex">
@@ -63,10 +93,76 @@ export const GraphScreen = ({
           selectedNodeId={selectedNode?.id}
           hiddenCategories={hiddenCategories}
         />
+
+        {/* Add Node Button */}
+        <button
+          onClick={() => setIsAddingNode(true)}
+          className="absolute bottom-8 right-8 w-14 h-14 bg-indigo-500 hover:bg-indigo-600 text-white rounded-full shadow-2xl flex items-center justify-center transition-all hover:scale-110 z-10"
+          title="노드 추가"
+        >
+          <Plus className="w-6 h-6" />
+        </button>
       </div>
 
+      {/* Add Node Modal */}
+      {isAddingNode && (
+        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl p-8 w-full max-w-md mx-4 shadow-2xl">
+            <h3 className="text-2xl font-bold text-white mb-6">새 노드 추가</h3>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">
+                  노드 이름 *
+                </label>
+                <input
+                  type="text"
+                  value={newNodeLabel}
+                  onChange={(e) => setNewNodeLabel(e.target.value)}
+                  placeholder="예: 리액트, 데이터베이스, 알고리즘"
+                  className="w-full bg-slate-800 text-white px-4 py-3 rounded-xl border border-slate-700 focus:border-indigo-500 outline-none transition-all"
+                  autoFocus
+                  onKeyPress={(e) => e.key === 'Enter' && handleAddNode()}
+                />
+              </div>
 
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">
+                  카테고리 (선택사항)
+                </label>
+                <input
+                  type="text"
+                  value={newNodeCategory}
+                  onChange={(e) => setNewNodeCategory(e.target.value)}
+                  placeholder="예: 프로그래밍, 수학, 과학"
+                  className="w-full bg-slate-800 text-white px-4 py-3 rounded-xl border border-slate-700 focus:border-indigo-500 outline-none transition-all"
+                  onKeyPress={(e) => e.key === 'Enter' && handleAddNode()}
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => {
+                  setIsAddingNode(false);
+                  setNewNodeLabel('');
+                  setNewNodeCategory('');
+                }}
+                className="flex-1 px-4 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-medium transition-all"
+              >
+                취소
+              </button>
+              <button
+                onClick={handleAddNode}
+                disabled={!newNodeLabel.trim()}
+                className="flex-1 px-4 py-3 bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                추가
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
-
