@@ -13,6 +13,8 @@ interface GraphSidebarProps {
   selectedNode: Node | null;
   toggleCategoryVisibility: (category: string) => void;
   hiddenCategories: string[];
+  isCollapsed: boolean;
+  setIsCollapsed: (collapsed: boolean) => void;
 }
 
 export const GraphSidebar = ({
@@ -24,12 +26,12 @@ export const GraphSidebar = ({
   renameFolder,
   selectedNode,
   toggleCategoryVisibility,
-  hiddenCategories
+  hiddenCategories,
+  isCollapsed,
+  setIsCollapsed
 }: GraphSidebarProps) => {
-  const [isCollapsed, setIsCollapsed] = useState(false);
-
   return (
-    <div className={`absolute left-0 top-0 h-full bg-slate-900/95 backdrop-blur-xl border-r border-slate-800 z-10 shadow-2xl flex flex-col transform transition-all duration-500 ease-in-out ${screen === 'graph' ? 'translate-x-0' : '-translate-x-full'} ${isCollapsed ? 'w-12' : 'w-80'}`}>
+    <div className={`absolute left-0 top-0 h-full bg-slate-900/95 backdrop-blur-xl border-r border-slate-800 z-40 shadow-2xl flex flex-col transform transition-all duration-500 ease-in-out ${screen === 'graph' ? 'translate-x-0' : '-translate-x-full'} ${isCollapsed ? 'w-12' : 'w-80'}`}>
       <button
         onClick={() => setIsCollapsed(!isCollapsed)}
         className="absolute -right-3 top-24 bg-slate-800 text-slate-400 hover:text-white p-1 rounded-full border border-slate-700 shadow-lg z-50 transition-colors"

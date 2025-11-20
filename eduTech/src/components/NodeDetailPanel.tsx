@@ -17,20 +17,14 @@ export const NodeDetailPanel = ({
   graphData,
   startQuiz
 }: NodeDetailPanelProps) => (
-  <div className="absolute right-0 top-0 h-full w-96 bg-slate-900/95 backdrop-blur-xl border-l border-slate-800 z-20 shadow-2xl flex flex-col p-6 pt-20 animate-smooth-slide-left overflow-y-auto">
-    <div className="flex justify-between items-start mb-6">
+  <div className="w-96 h-full bg-slate-900/95 backdrop-blur-xl border-l border-slate-800 shadow-2xl flex flex-col p-6 pt-20 overflow-y-auto custom-scrollbar">
+    <div className="mb-6">
       <div>
         <span className="text-xs font-bold text-indigo-400 bg-indigo-900/30 border border-indigo-500/30 px-2 py-1 rounded uppercase tracking-wider">
           {selectedNode.category}
         </span>
         <h2 className="text-2xl font-bold text-white mt-3">{selectedNode.label}</h2>
       </div>
-      <button 
-        onClick={() => setSelectedNode(null)} 
-        className="text-slate-500 hover:text-white transition-colors"
-      >
-        <X className="w-6 h-6" />
-      </button>
     </div>
 
     <div className="space-y-3 mb-8">
