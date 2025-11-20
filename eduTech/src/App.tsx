@@ -321,9 +321,6 @@ export default function App() {
         />
         } />
       </Routes>
-      
-      {/* Global Chatbot - visible from main page onwards */}
-      {screen !== 'onboarding' && screen !== 'auth' && screen !== 'onboardingFlow' && <Chatbot onSaveToGraph={handleSaveConceptToGraph} isDisabled={selectedNode !== null} />}
     </>
   );
 }
