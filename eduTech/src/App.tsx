@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useParams } from 'react-router-dom';
+import toast, { Toaster } from 'react-hot-toast';
 import { ScreenState, Node, Link } from './utils/types';
 import { generateUUID } from './utils/uuid';
 import { HomeScreen } from './screens/HomeScreen';
@@ -17,6 +18,7 @@ import { useFolderHierarchy } from './hooks/useFolderHierarchy';
 import { useInputAnalysis } from './hooks/useInputAnalysis';
 import { useQuizAndMeta } from './hooks/useQuizAndMeta';
 import { useAuth } from './hooks/useAuth';
+import { clearAllData } from './services/supabaseService';
 
 export default function App() {
   const [screen, setScreen] = useState<ScreenState>('home');
@@ -84,8 +86,11 @@ export default function App() {
       if (!graphLoading && graphData.nodes.length > 0) {
         setScreen('graph');
         navigate('/graph');
+      } else if (!graphLoading) {
+        // New user with no graph data - go to onboarding
+        setScreen('onboarding');
+        navigate('/onboarding');
       }
-      // Otherwise, stay on home to go through onboarding
     }
   }, [authLoading, user, screen, graphLoading, graphData.nodes.length, navigate]);
 
@@ -139,13 +144,45 @@ export default function App() {
 
     addNodesAndLinks([newNode], newLinks);
 
+
     // Switch to graph screen to show the new node
     setScreen('graph');
     navigate('/graph');
   };
 
+  // Clear all data
+  const handleClearAllData = async () => {
+    try {
+      await clearAllData();
+      // Reset local state
+      setGraphData({ nodes: [], links: [] });
+      setSelectedNode(null);
+      console.log('모든 데이터가 삭제되었습니다.');
+    } catch (error) {
+      console.error('데이터 삭제 실패:', error);
+      alert('데이터 삭제에 실패했습니다.');
+    }
+  };
+
   return (
     <>
+      <Toaster 
+        position="top-right"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            background: '#1e293b',
+            color: '#fff',
+            border: '1px solid #334155',
+          },
+          success: {
+            iconTheme: {
+              primary: '#10b981',
+              secondary: '#fff',
+            },
+          },
+        }}
+      />
       <Routes>
         <Route path="/" element={
         screen === 'auth' ? (
@@ -302,6 +339,7 @@ export default function App() {
             setScreen('auth');
             navigate('/');
           }}
+          onClearAllData={handleClearAllData}
         />
         } />
 
@@ -384,6 +422,15 @@ function NodePageRoute({ graphData, addNodesAndLinks, setSelectedNode }: { graph
 
     const newLinks: Link[] = [{ source: node.id, target: newNode.id }];
     addNodesAndLinks([newNode], newLinks);
+    
+    // Show success toast
+    toast.success(`"${subconcept}" 하위개념이 추가되었습니다! 🎉`, {
+      style: {
+        background: '#1e293b',
+        color: '#fff',
+        border: '1px solid #10b981',
+      },
+    });
   };
 
   return (

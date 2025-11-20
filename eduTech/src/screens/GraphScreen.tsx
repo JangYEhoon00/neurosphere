@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import toast from 'react-hot-toast';
 import { ScreenState, GraphData, Node, FolderStructure, Link } from '../utils/types';
 import { ThreeGraph } from '../components/ThreeGraph';
 import { BackButton } from '../components/BackButton';
@@ -22,12 +23,13 @@ interface GraphScreenProps {
   removeCategory: (category: string) => void;
   addNodesAndLinks: (nodes: Node[], links: Link[]) => void;
   onSignOut: () => void;
+  onClearAllData: () => void;
 }
 
 export const GraphScreen = ({ 
   screen, setScreen, folderData, toggleFolder, setSelectedNode, renameFolder, 
   selectedNode, toggleCategoryVisibility, hiddenCategories, graphData, startQuiz,
-  removeNode, removeCategory, addNodesAndLinks, onSignOut
+  removeNode, removeCategory, addNodesAndLinks, onSignOut, onClearAllData
 }: GraphScreenProps) => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isAddingNode, setIsAddingNode] = useState(false);
@@ -54,6 +56,16 @@ export const GraphScreen = ({
     }
 
     addNodesAndLinks([newNode], newLinks);
+    
+    // Show success toast
+    toast.success(`"${newNodeLabel.trim()}" 노드가 추가되었습니다! ✨`, {
+      style: {
+        background: '#1e293b',
+        color: '#fff',
+        border: '1px solid #6366f1',
+      },
+    });
+    
     setNewNodeLabel('');
     setNewNodeCategory('');
     setIsAddingNode(false);
@@ -78,6 +90,7 @@ export const GraphScreen = ({
         removeNode={removeNode}
         removeCategory={removeCategory}
         onSignOut={onSignOut}
+        onClearAllData={onClearAllData}
       />
 
       {/* 3D Graph Area */}

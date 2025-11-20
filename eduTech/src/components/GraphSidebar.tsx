@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { FileText, Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import toast from 'react-hot-toast';
+import { FileText, Search, ChevronLeft, ChevronRight, Trash2 } from 'lucide-react';
 import { FolderStructure, GraphData, Node, ScreenState } from '../utils/types';
 import { FolderItem } from './FolderItem';
 
@@ -18,6 +19,7 @@ interface GraphSidebarProps {
   removeNode: (nodeId: string) => void;
   removeCategory: (category: string) => void;
   onSignOut: () => void;
+  onClearAllData: () => void;
 }
 
 export const GraphSidebar = ({
@@ -34,8 +36,31 @@ export const GraphSidebar = ({
   setIsCollapsed,
   removeNode,
   removeCategory,
-  onSignOut
+  onSignOut,
+  onClearAllData
 }: GraphSidebarProps) => {
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
+
+  const handleClearData = () => {
+    if (showClearConfirm) {
+      onClearAllData();
+      setShowClearConfirm(false);
+      
+      // Show success toast
+      toast.success('모든 데이터가 삭제되었습니다', {
+        style: {
+          background: '#1e293b',
+          color: '#fff',
+          border: '1px solid #ef4444',
+        },
+        icon: '🗑️',
+      });
+    } else {
+      setShowClearConfirm(true);
+      setTimeout(() => setShowClearConfirm(false), 3000);
+    }
+  };
+
   return (
     <div className={`absolute left-0 top-0 h-full bg-slate-900/95 backdrop-blur-xl border-r border-slate-800 z-40 shadow-2xl flex flex-col transform transition-all duration-500 ease-in-out ${screen === 'graph' ? 'translate-x-0' : '-translate-x-full'} ${isCollapsed ? 'w-12' : 'w-80'}`}>
       <button
@@ -78,8 +103,21 @@ export const GraphSidebar = ({
           ))}
         </div>
 
-        {/* Logout Button */}
-        <div className="p-4 border-t border-slate-800">
+        {/* Clear All Data Button */}
+        <div className="p-4 border-t border-slate-800 space-y-2">
+          <button
+            onClick={handleClearData}
+            className={`w-full py-2 px-4 rounded-lg transition-all text-sm font-medium flex items-center justify-center gap-2 ${
+              showClearConfirm 
+                ? 'bg-red-600 hover:bg-red-700 text-white animate-pulse' 
+                : 'bg-slate-800 hover:bg-orange-900/30 text-slate-400 hover:text-orange-400'
+            }`}
+          >
+            <Trash2 className="w-4 h-4" />
+            {showClearConfirm ? '정말 삭제하시겠습니까?' : '모든 데이터 삭제'}
+          </button>
+          
+          {/* Logout Button */}
           <button
             onClick={onSignOut}
             className="w-full py-2 px-4 bg-slate-800 hover:bg-red-900/30 text-slate-400 hover:text-red-400 rounded-lg transition-colors text-sm font-medium flex items-center justify-center gap-2"
