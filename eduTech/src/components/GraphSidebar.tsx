@@ -17,6 +17,7 @@ interface GraphSidebarProps {
   setIsCollapsed: (collapsed: boolean) => void;
   removeNode: (nodeId: string) => void;
   removeCategory: (category: string) => void;
+  onSignOut: () => void;
 }
 
 export const GraphSidebar = ({
@@ -32,7 +33,8 @@ export const GraphSidebar = ({
   isCollapsed,
   setIsCollapsed,
   removeNode,
-  removeCategory
+  removeCategory,
+  onSignOut
 }: GraphSidebarProps) => {
   return (
     <div className={`absolute left-0 top-0 h-full bg-slate-900/95 backdrop-blur-xl border-r border-slate-800 z-40 shadow-2xl flex flex-col transform transition-all duration-500 ease-in-out ${screen === 'graph' ? 'translate-x-0' : '-translate-x-full'} ${isCollapsed ? 'w-12' : 'w-80'}`}>
@@ -74,6 +76,16 @@ export const GraphSidebar = ({
               removeCategory={removeCategory}
             />
           ))}
+        </div>
+
+        {/* Logout Button */}
+        <div className="p-4 border-t border-slate-800">
+          <button
+            onClick={onSignOut}
+            className="w-full py-2 px-4 bg-slate-800 hover:bg-red-900/30 text-slate-400 hover:text-red-400 rounded-lg transition-colors text-sm font-medium flex items-center justify-center gap-2"
+          >
+            로그아웃
+          </button>
         </div>
       </div>
     </div>

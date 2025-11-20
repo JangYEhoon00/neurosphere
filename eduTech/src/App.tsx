@@ -278,6 +278,11 @@ export default function App() {
           removeNode={removeNode}
           removeCategory={removeCategory}
           addNodesAndLinks={addNodesAndLinks}
+          onSignOut={async () => {
+            await signOut();
+            setScreen('auth');
+            navigate('/');
+          }}
         />
         } />
 

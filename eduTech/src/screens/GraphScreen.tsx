@@ -21,12 +21,13 @@ interface GraphScreenProps {
   removeNode: (nodeId: string) => void;
   removeCategory: (category: string) => void;
   addNodesAndLinks: (nodes: Node[], links: Link[]) => void;
+  onSignOut: () => void;
 }
 
 export const GraphScreen = ({ 
   screen, setScreen, folderData, toggleFolder, setSelectedNode, renameFolder, 
   selectedNode, toggleCategoryVisibility, hiddenCategories, graphData, startQuiz,
-  removeNode, removeCategory, addNodesAndLinks
+  removeNode, removeCategory, addNodesAndLinks, onSignOut
 }: GraphScreenProps) => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isAddingNode, setIsAddingNode] = useState(false);
@@ -76,6 +77,7 @@ export const GraphScreen = ({
         setIsCollapsed={setIsSidebarCollapsed}
         removeNode={removeNode}
         removeCategory={removeCategory}
+        onSignOut={onSignOut}
       />
 
       {/* 3D Graph Area */}
