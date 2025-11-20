@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { MessageSquare, Send, Sparkles, X } from 'lucide-react';
 import { Node } from '../utils/types';
-import { GoogleGenAI } from '@google/genai';
+import OpenAI from 'openai';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -41,21 +41,23 @@ export const NodeChatbot = ({ node, onSaveSubconcept }: NodeChatbotProps) => {
 
   const generateInitialSubconcepts = async () => {
     try {
-      const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+      const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
       if (!apiKey) return;
 
-      const ai = new GoogleGenAI({ apiKey });
+      const openai = new OpenAI({ apiKey, dangerouslyAllowBrowser: true });
 
-      const prompt = `"${node.label}"라는 개념에 대해 학습할 때 알아야 할 핵심 하위 개념 3가지를 추천해주세요. 
-      각 개념은 간단명료하게 2-4단어로 표현해주세요.
-      
-      형식: 개념1, 개념2, 개념3`;
+      const response = await openai.chat.completions.create({
+        model: 'gpt-4o-mini',
+        messages: [{
+          role: 'user',
+          content: `"${node.label}"라는 개념에 대해 학습할 때 알아야 할 핵심 하위 개념 3가지를 추천해주세요. 
+각 개념은 간단명료하게 2-4단어로 표현해주세요.
 
-      const result = await ai.models.generateContent({
-        model: 'gemini-1.5-flash',
-        contents: prompt
+형식: 개념1, 개념2, 개념3`
+        }]
       });
-      const text = result.text || '';
+      
+      const text = response.choices[0]?.message?.content || '';
       const concepts = text.split(',').map(c => c.trim()).filter(c => c.length > 0).slice(0, 3);
       setSuggestedSubconcepts(concepts);
     } catch (error) {
@@ -72,29 +74,36 @@ export const NodeChatbot = ({ node, onSaveSubconcept }: NodeChatbotProps) => {
     setIsLoading(true);
 
     try {
-      const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+      const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
       if (!apiKey) {
         throw new Error('API 키가 설정되지 않았습니다.');
       }
 
-      const ai = new GoogleGenAI({ apiKey });
+      const openai = new OpenAI({ apiKey, dangerouslyAllowBrowser: true });
 
-      const context = `현재 학습 중인 개념: "${node.label}"
+      const response = await openai.chat.completions.create({
+        model: 'gpt-4o-mini',
+        messages: [
+          {
+            role: 'system',
+            content: `현재 학습 중인 개념: "${node.label}"
 카테고리: ${node.category}
 설명: ${node.description || '없음'}
 
-이전 대화:
-${messages.map(m => `${m.role === 'user' ? '학생' : 'AI'}: ${m.content}`).join('\n')}
-
-학생의 질문: ${input}
-
-위 맥락을 고려하여 "${node.label}"에 대한 학생의 질문에 친절하고 명확하게 답변해주세요.`;
-
-      const result = await ai.models.generateContent({
-        model: 'gemini-1.5-flash',
-        contents: context
+위 맥락을 고려하여 "${node.label}"에 대한 학생의 질문에 친절하고 명확하게 답변해주세요.`
+          },
+          ...messages.map(m => ({
+            role: m.role as 'user' | 'assistant',
+            content: m.content
+          })),
+          {
+            role: 'user',
+            content: input
+          }
+        ]
       });
-      const aiResponse = result.text || '';
+      
+      const aiResponse = response.choices[0]?.message?.content || '';
 
       const assistantMessage: Message = { role: 'assistant', content: aiResponse };
       setMessages(prev => [...prev, assistantMessage]);
