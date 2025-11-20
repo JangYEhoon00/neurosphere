@@ -30,7 +30,8 @@ export default function App() {
     uniqueCategories,
     toggleCategoryVisibility,
     updateNodeStatus,
-    addNodesAndLinks
+    addNodesAndLinks,
+    isLoading: graphLoading
   } = useGraphData(user?.id);
 
   const { folderData, toggleFolder, renameFolder } = useFolderHierarchy(graphData.nodes);
@@ -66,6 +67,13 @@ export default function App() {
       setScreen('auth');
     }
   }, [authLoading, user, screen]);
+
+  // Skip onboarding if user already has data
+  useEffect(() => {
+    if (user && !graphLoading && screen === 'onboarding' && graphData.nodes.length > 0) {
+      setScreen('graph');
+    }
+  }, [user, graphLoading, graphData.nodes.length, screen]);
 
   // Execute Save with Selected Directory/Category
   const handleFinalSave = (targetCategory: string) => {

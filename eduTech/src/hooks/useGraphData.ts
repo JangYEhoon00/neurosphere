@@ -1,6 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
 import { GraphData, Node, Link } from '../utils/types';
-import { INITIAL_NODES, INITIAL_LINKS } from '../utils/constants';
 import { fetchGraphData, createNodes, createLinks, updateNode } from '../services/supabaseService';
 
 export const useGraphData = (userId?: string) => {
@@ -15,8 +14,7 @@ export const useGraphData = (userId?: string) => {
   // Fetch data when user logs in
   useEffect(() => {
     if (!userId) {
-      // If no user, use initial demo data
-      setGraphData({ nodes: INITIAL_NODES as any, links: INITIAL_LINKS });
+      setGraphData({ nodes: [], links: [] });
       return;
     }
 
