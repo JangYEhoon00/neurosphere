@@ -75,15 +75,6 @@ export default function App() {
     }
   }, [authLoading, user, screen]);
 
-  // Skip onboarding if user already completed it before (has localStorage flag)
-  useEffect(() => {
-    const hasCompletedOnboarding = localStorage.getItem('hasCompletedOnboarding');
-    // Only skip if explicitly completed before
-    if (user && !graphLoading && screen === 'onboarding' && hasCompletedOnboarding === 'true') {
-      setScreen('graph');
-      navigate('/graph');
-    }
-  }, [user, graphLoading, screen, navigate]);
 
   // Execute Save with Selected Directory/Category
   const handleFinalSave = (targetCategory: string) => {
@@ -226,7 +217,6 @@ export default function App() {
             });
 
             addNodesAndLinks(newNodes, newLinks);
-            localStorage.setItem('hasCompletedOnboarding', 'true');
             setScreen('graph');
             navigate('/graph');
           }}
