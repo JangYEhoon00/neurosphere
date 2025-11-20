@@ -39,7 +39,7 @@ export const NodePage = ({ node }: NodePageProps) => {
 
   return (
     <div className="h-full w-full bg-[#020617] text-white overflow-y-auto custom-scrollbar">
-      <div className="max-w-5xl mx-auto p-8 pt-20">
+      <div className="max-w-7xl mx-auto px-6 py-8 pt-20">
         {/* Header Section */}
         <header className="mb-12 relative">
           <div className="absolute -top-20 -left-20 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
@@ -97,45 +97,43 @@ export const NodePage = ({ node }: NodePageProps) => {
           </p>
         </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 w-full">
-          {/* Main Editor Area */}
-          <div className="lg:col-span-2 space-y-8 ">
-            <div className="bg-slate-900/50 rounded-2xl border border-slate-800 overflow-hidden min-h-[600px] relative group">
-              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-slate-900/30 pointer-events-none" />
-              
-              <div className="p-8 relative z-10">
-                <div className="flex items-center justify-between mb-8 text-slate-500 border-b border-slate-800 pb-4">
-                  <div className="flex items-center gap-3">
-                    <Type className="w-5 h-5 text-indigo-400" />
-                    <span className="font-medium">Content</span>
-                  </div>
-                  <span className="text-xs text-slate-600">
-                    {content.length} characters
-                  </span>
+        {/* Main Editor Area */}
+        <div className="w-full">
+          <div className="bg-slate-900/50 rounded-2xl border border-slate-800 overflow-hidden min-h-[600px] relative group">
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-slate-900/30 pointer-events-none" />
+            
+            <div className="p-8 relative z-10">
+              <div className="flex items-center justify-between mb-8 text-slate-500 border-b border-slate-800 pb-4">
+                <div className="flex items-center gap-3">
+                  <Type className="w-5 h-5 text-indigo-400" />
+                  <span className="font-medium">Content</span>
                 </div>
-                
-                {/* Editable Content Area */}
-                <textarea
-                  ref={contentRef}
-                  value={content}
-                  onChange={(e) => setContent(e.target.value)}
-                  disabled={!isEditing}
-                  placeholder={isEditing ? NODE_PLACEHOLDER.message : NODE_PLACEHOLDER.editMessage}
-                  className={`w-full min-h-[500px] bg-transparent text-slate-200 text-lg leading-relaxed resize-none outline-none border-none placeholder:italic transition-all ${
-                    isEditing 
-                      ? 'placeholder:text-slate-600 cursor-text' 
-                      : 'placeholder:text-slate-700 cursor-default opacity-80'
-                  }`}
-                  style={{ 
-                    fontFamily: 'inherit',
-                    lineHeight: '1.8'
-                  }}
-                />
+                <span className="text-xs text-slate-600">
+                  {content.length} characters
+                </span>
               </div>
+              
+              {/* Editable Content Area */}
+              <textarea
+                ref={contentRef}
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                disabled={!isEditing}
+                placeholder={isEditing ? NODE_PLACEHOLDER.message : NODE_PLACEHOLDER.editMessage}
+                className={`w-full min-h-[500px] bg-transparent text-slate-200 text-lg leading-relaxed resize-none outline-none border-none placeholder:italic transition-all ${
+                  isEditing 
+                    ? 'placeholder:text-slate-600 cursor-text' 
+                    : 'placeholder:text-slate-700 cursor-default opacity-80'
+                }`}
+                style={{ 
+                  fontFamily: 'inherit',
+                  lineHeight: '1.8'
+                }}
+              />
             </div>
           </div>
-          </div>
         </div>
+      </div>
     </div>
   );
 };
