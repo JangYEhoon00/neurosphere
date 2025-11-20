@@ -7,10 +7,8 @@ export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, '.', '');
     return {
       base: '/',
-      root: 'src',
-      envDir: '../',
       build: {
-        outDir: '../dist'
+        outDir: 'dist'
       },
       server: {
         port: 3000,
