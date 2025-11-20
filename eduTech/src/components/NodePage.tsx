@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Node } from '../utils/types';
-import { Edit3, Mic, BookOpen, Clock, Hash, Save, Type } from 'lucide-react';
-import {NODE_PLACEHOLDER} from '../utils/constants';
+import { Edit3, Mic, Clock, Hash, Save, Type, CheckCircle, AlertCircle } from 'lucide-react';
+import { NODE_PLACEHOLDER } from '../utils/constants';
+import { fetchNodeContent, saveNodeContent } from '../services/supabaseService';
 
 interface NodePageProps {
   node: Node;
@@ -12,7 +13,33 @@ export const NodePage = ({ node }: NodePageProps) => {
   const [content, setContent] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date>(new Date());
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const contentRef = useRef<HTMLTextAreaElement>(null);
+  const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // 노드 콘텐츠 불러오기
+  useEffect(() => {
+    const loadContent = async () => {
+      try {
+        setIsLoading(true);
+        const data = await fetchNodeContent(node.id);
+        if (data) {
+          setTitle(data.title);
+          setContent(data.content);
+          setLastSaved(new Date(data.last_saved));
+        }
+      } catch (error) {
+        console.error('콘텐츠 불러오기 실패:', error);
+        setSaveError('콘텐츠를 불러올 수 없습니다.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadContent();
+  }, [node.id]);
 
   // Auto-resize textarea
   useEffect(() => {
@@ -22,11 +49,44 @@ export const NodePage = ({ node }: NodePageProps) => {
     }
   }, [content]);
 
-  const handleSave = () => {
-    setLastSaved(new Date());
-    setIsEditing(false); // 저장 후 편집 모드 해제
-    // TODO: Save to backend/localStorage
-    console.log('Saving content:', { title, content });
+  // 자동 저장 (3초마다)
+  useEffect(() => {
+    if (!isEditing) return;
+
+    // 기존 타이머 취소
+    if (autoSaveTimerRef.current) {
+      clearTimeout(autoSaveTimerRef.current);
+    }
+
+    // 3초 후 자동 저장
+    autoSaveTimerRef.current = setTimeout(() => {
+      handleSave(false); // 자동 저장은 편집 모드 유지
+    }, 3000);
+
+    return () => {
+      if (autoSaveTimerRef.current) {
+        clearTimeout(autoSaveTimerRef.current);
+      }
+    };
+  }, [title, content, isEditing]);
+
+  const handleSave = async (exitEditMode = true) => {
+    try {
+      setIsSaving(true);
+      setSaveError(null);
+      
+      await saveNodeContent(node.id, title, content);
+      
+      setLastSaved(new Date());
+      if (exitEditMode) {
+        setIsEditing(false);
+      }
+    } catch (error: any) {
+      console.error('저장 실패:', error);
+      setSaveError(error.message || '저장에 실패했습니다.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const formatLastSaved = () => {
@@ -37,6 +97,17 @@ export const NodePage = ({ node }: NodePageProps) => {
     return `${Math.floor(diff / 3600)}h ago`;
   };
 
+  if (isLoading) {
+    return (
+      <div className="h-full w-full bg-[#020617] text-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500 mx-auto mb-4"></div>
+          <p className="text-slate-400">콘텐츠 불러오는 중...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="h-full w-full bg-[#020617] text-white overflow-y-auto custom-scrollbar">
       <div className="max-w-7xl mx-auto px-6 py-8 pt-20">
@@ -44,15 +115,38 @@ export const NodePage = ({ node }: NodePageProps) => {
         <header className="mb-12 relative">
           <div className="absolute -top-20 -left-20 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
           
-          <div className="flex items-center gap-3 mb-6 relative z-10">
+          <div className="flex items-center gap-3 mb-6 relative z-10 flex-wrap">
             <span className="px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-400 text-xs font-bold border border-indigo-500/20 uppercase tracking-wider flex items-center gap-2">
               <Hash className="w-3 h-3" />
               {node.category}
             </span>
+            
+            {/* 저장 상태 표시 */}
             <span className="flex items-center gap-2 text-slate-500 text-xs font-medium">
               <Clock className="w-3 h-3" />
               Last saved {formatLastSaved()}
             </span>
+            
+            {isSaving && (
+              <span className="flex items-center gap-2 text-yellow-400 text-xs font-medium animate-pulse">
+                <Save className="w-3 h-3" />
+                저장 중...
+              </span>
+            )}
+            
+            {!isSaving && !saveError && isEditing && (
+              <span className="flex items-center gap-2 text-emerald-400 text-xs font-medium">
+                <CheckCircle className="w-3 h-3" />
+                자동 저장 활성화
+              </span>
+            )}
+            
+            {saveError && (
+              <span className="flex items-center gap-2 text-red-400 text-xs font-medium">
+                <AlertCircle className="w-3 h-3" />
+                {saveError}
+              </span>
+            )}
           </div>
 
           {/* Editable Title */}
@@ -80,11 +174,12 @@ export const NodePage = ({ node }: NodePageProps) => {
               {isEditing ? 'Editing' : 'Start Writing'}
             </button>
             <button 
-              onClick={handleSave}
-              className="px-6 py-3 bg-emerald-500 text-white rounded-xl font-bold text-sm hover:bg-emerald-600 transition-colors flex items-center gap-2"
+              onClick={() => handleSave(true)}
+              disabled={isSaving}
+              className="px-6 py-3 bg-emerald-500 text-white rounded-xl font-bold text-sm hover:bg-emerald-600 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Save className="w-4 h-4" />
-              Save
+              {isSaving ? '저장 중...' : 'Save'}
             </button>
             <button className="px-6 py-3 bg-slate-800 text-white rounded-xl font-bold text-sm border border-slate-700 hover:bg-slate-700 transition-colors flex items-center gap-2">
               <Mic className="w-4 h-4 text-emerald-400" />
