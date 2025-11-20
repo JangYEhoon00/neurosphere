@@ -1,6 +1,6 @@
 import React from 'react';
 import { HelpCircle, Loader2, Zap, Brain, Play, Plus } from 'lucide-react';
-import { ScreenState, AnalysisResult } from '../';
+import { ScreenState, AnalysisResult } from '../utils/types';
 import { cleanMarkdown } from '../utils/markdownUtils';
 import { BackButton } from '../components/BackButton';
 import { SaveLocationModal } from '../components/SaveLocationModal';

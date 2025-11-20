@@ -1,6 +1,6 @@
 import React from 'react';
 import { X } from 'lucide-react';
-import { ScreenState, QuizData } from '../../types';
+import { ScreenState, QuizData } from '../utils/types';
 import { cleanMarkdown } from '../utils/markdownUtils';
 
 interface QuizScreenProps {

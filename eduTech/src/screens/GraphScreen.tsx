@@ -1,6 +1,6 @@
 import React from 'react';
 import { FileText, Search, Plus, X, Mic, HelpCircle, ArrowLeft } from 'lucide-react';
-import { ScreenState, GraphData, Node, FolderStructure } from '../../types';
+import { ScreenState, GraphData, Node, FolderStructure } from '../utils/types';
 import { ThreeGraph } from '../components/ThreeGraph';
 import { FolderItem } from '../components/FolderItem';
 import { BackButton } from '../components/BackButton';

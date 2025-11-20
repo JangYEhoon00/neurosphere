@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { ChevronDown, ChevronRight, Folder, Eye, EyeOff, Edit2 } from 'lucide-react';
-import { FolderStructure } from '../../types';
+import { FolderStructure } from '../utils/types';
 
 interface FolderItemProps {
   item: FolderStructure;

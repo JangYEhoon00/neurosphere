@@ -1,6 +1,6 @@
 import React from 'react';
 import { X, Brain, Loader2, Zap } from 'lucide-react';
-import { ScreenState, MetaResult, Node } from '../../types';
+import { ScreenState, MetaResult, Node } from '../utils/types';
 import { cleanMarkdown } from '../utils/markdownUtils';
 
 interface MetaCheckScreenProps {
