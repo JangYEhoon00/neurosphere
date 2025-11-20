@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { ScreenState, Node, Link } from './utils/types';
 import { generateUUID } from './utils/uuid';
 import { HomeScreen } from './screens/HomeScreen';
@@ -9,6 +10,8 @@ import { MetaCheckScreen } from './screens/MetaCheckScreen';
 import { QuizScreen } from './screens/QuizScreen';
 import { AuthScreen } from './screens/AuthScreen';
 import { Chatbot } from './components/Chatbot';
+import { NodePage } from './components/NodePage';
+import { NodeChatbot } from './components/NodeChatbot';
 import { useGraphData } from './hooks/useGraphData';
 import { useFolderHierarchy } from './hooks/useFolderHierarchy';
 import { useInputAnalysis } from './hooks/useInputAnalysis';
@@ -17,6 +20,7 @@ import { useAuth } from './hooks/useAuth';
 
 export default function App() {
   const [screen, setScreen] = useState<ScreenState>('onboarding');
+  const navigate = useNavigate();
 
   // Authentication
   const { user, loading: authLoading, signIn, signUp, signOut, signInAnonymously } = useAuth();
@@ -75,8 +79,9 @@ export default function App() {
   useEffect(() => {
     if (user && !graphLoading && screen === 'onboarding' && graphData.nodes.length > 0) {
       setScreen('graph');
+      navigate('/graph');
     }
-  }, [user, graphLoading, graphData.nodes.length, screen]);
+  }, [user, graphLoading, graphData.nodes.length, screen, navigate]);
 
   // Execute Save with Selected Directory/Category
   const handleFinalSave = (targetCategory: string) => {
@@ -129,57 +134,69 @@ export default function App() {
 
     // Switch to graph screen to show the new node
     setScreen('graph');
+    navigate('/graph');
   };
 
   return (
     <>
-      {screen === 'auth' && (
-        <AuthScreen 
-          onSignIn={async (email, password) => {
-            try {
-              const result = await signIn(email, password);
-              if (result) {
-                setScreen('onboarding');
-                return { success: true };
+      <Routes>
+        <Route path="/" element={
+        screen === 'auth' ? (
+          <AuthScreen 
+            onSignIn={async (email, password) => {
+              try {
+                const result = await signIn(email, password);
+                if (result) {
+                  setScreen('onboarding');
+                  navigate('/');
+                  return { success: true };
+                }
+                return { success: false, error: '로그인에 실패했습니다.' };
+              } catch (error: any) {
+                console.error('Sign In Error:', error);
+                return { success: false, error: error.message || '로그인 중 오류가 발생했습니다.' };
               }
-              return { success: false, error: '로그인에 실패했습니다.' };
-            } catch (error: any) {
-              console.error('Sign In Error:', error);
-              return { success: false, error: error.message || '로그인 중 오류가 발생했습니다.' };
-            }
-          }}
-          onSignUp={async (email, password) => {
-            try {
-              const result = await signUp(email, password);
-              if (result) {
-                setScreen('onboarding');
-                return { success: true };
+            }}
+            onSignUp={async (email, password) => {
+              try {
+                const result = await signUp(email, password);
+                if (result) {
+                  setScreen('onboarding');
+                  navigate('/');
+                  return { success: true };
+                }
+                return { success: false, error: '회원가입에 실패했습니다.' };
+              } catch (error: any) {
+                return { success: false, error: error.message || '회원가입 중 오류가 발생했습니다.' };
               }
-              return { success: false, error: '회원가입에 실패했습니다.' };
-            } catch (error: any) {
-              return { success: false, error: error.message || '회원가입 중 오류가 발생했습니다.' };
-            }
-          }}
-          onAnonymousSignIn={async () => {
-            try {
-              const result = await signInAnonymously();
-              if (result) {
-                setScreen('onboarding');
-                return { success: true };
+            }}
+            onAnonymousSignIn={async () => {
+              try {
+                const result = await signInAnonymously();
+                if (result) {
+                  setScreen('onboarding');
+                  navigate('/');
+                  return { success: true };
+                }
+                return { success: false, error: '익명 로그인에 실패했습니다.' };
+              } catch (error: any) {
+                return { success: false, error: error.message || '익명 로그인 중 오류가 발생했습니다.' };
               }
-              return { success: false, error: '익명 로그인에 실패했습니다.' };
-            } catch (error: any) {
-              return { success: false, error: error.message || '익명 로그인 중 오류가 발생했습니다.' };
-            }
-          }}
-          loading={authLoading}
-        />
-      )}
-      {screen === 'onboarding' && <HomeScreen setScreen={setScreen} />}
-      {screen === 'onboardingFlow' && (
+            }}
+            loading={authLoading}
+          />
+        ) : screen === 'onboarding' ? (
+          <HomeScreen setScreen={(s) => {
+            setScreen(s);
+            if (s === 'onboardingFlow') navigate('/onboarding');
+            if (s === 'input') navigate('/input');
+          }} />
+        ) : <Navigate to="/graph" replace />
+        } />
+
+        <Route path="/onboarding" element={
         <OnboardingFlow
           onComplete={(data: any) => {
-            // Map onboarding data into initial graph nodes/links and navigate to graph
             const baseCategory = data?.usageType || '일반';
             const newNodes: Node[] = [];
             if (data?.usageType === 'work') {
@@ -208,12 +225,16 @@ export default function App() {
 
             addNodesAndLinks(newNodes, newLinks);
             setScreen('graph');
+            navigate('/graph');
           }}
-          onBack={() => setScreen('onboarding')}
+          onBack={() => {
+            setScreen('onboarding');
+            navigate('/');
+          }}
         />
-      )}
-      
-      {screen === 'input' && (
+        } />
+        
+        <Route path="/input" element={
         <InputScreen 
           inputText={inputText}
           setInputText={setInputText}
@@ -224,36 +245,62 @@ export default function App() {
           editableConcepts={editableConcepts}
           isSaved={isSaved}
           setIsSaved={setIsSaved}
-          setScreen={setScreen}
+          setScreen={(s) => {
+            setScreen(s);
+            if (s === 'graph') navigate('/graph');
+          }}
           handleInitialSave={handleInitialSave}
           isSaveModalOpen={isSaveModalOpen}
           setIsSaveModalOpen={setIsSaveModalOpen}
           handleFinalSave={handleFinalSave}
           uniqueCategories={uniqueCategories}
         />
-      )}
+        } />
 
-      {screen === 'graph' && (
+        <Route path="/graph" element={
         <GraphScreen 
           screen={screen}
-          setScreen={setScreen}
+          setScreen={(s) => {
+            setScreen(s);
+            if (s === 'metacheck') navigate('/metacheck');
+            if (s === 'quiz') navigate('/quiz');
+          }}
           folderData={folderData}
           toggleFolder={toggleFolder}
-          setSelectedNode={setSelectedNode}
+          setSelectedNode={(node) => {
+            setSelectedNode(node);
+            if (node) {
+              navigate(`/node/${encodeURIComponent(node.label)}`);
+            }
+          }}
           renameFolder={renameFolder}
           selectedNode={selectedNode}
           toggleCategoryVisibility={toggleCategoryVisibility}
           hiddenCategories={hiddenCategories}
           graphData={graphData}
-          startQuiz={() => startQuiz(selectedNode, setScreen)}
+          startQuiz={() => startQuiz(selectedNode, (s) => {
+            setScreen(s);
+            navigate('/quiz');
+          })}
           removeNode={removeNode}
           removeCategory={removeCategory}
         />
-      )}
+        } />
 
-      {screen === 'metacheck' && (
+        <Route path="/node/:nodeName" element={
+        <NodePageRoute 
+          graphData={graphData}
+          addNodesAndLinks={addNodesAndLinks}
+          setSelectedNode={setSelectedNode}
+        />
+        } />
+
+        <Route path="/metacheck" element={
         <MetaCheckScreen 
-          setScreen={setScreen}
+          setScreen={(s) => {
+            setScreen(s);
+            if (s === 'graph') navigate('/graph');
+          }}
           metaResult={metaResult}
           selectedNode={selectedNode}
           userExplanation={userExplanation}
@@ -261,17 +308,88 @@ export default function App() {
           submitMetaCheck={() => submitMetaCheck(selectedNode, updateNodeStatus)}
           isLoading={quizMetaLoading}
         />
-      )}
+        } />
 
-      {screen === 'quiz' && (
+        <Route path="/quiz" element={
         <QuizScreen 
-          setScreen={setScreen}
+          setScreen={(s) => {
+            setScreen(s);
+            if (s === 'metacheck') navigate('/metacheck');
+            if (s === 'graph') navigate('/graph');
+          }}
           quizData={quizData}
         />
-      )}
-
+        } />
+      </Routes>
+      
       {/* Global Chatbot - visible from main page onwards */}
       {screen !== 'onboarding' && screen !== 'auth' && screen !== 'onboardingFlow' && <Chatbot onSaveToGraph={handleSaveConceptToGraph} isDisabled={selectedNode !== null} />}
     </>
+  );
+}
+
+// Separate component for node page route
+function NodePageRoute({ graphData, addNodesAndLinks, setSelectedNode }: { graphData: any; addNodesAndLinks: any; setSelectedNode: any }) {
+  const { nodeName } = useParams<{ nodeName: string }>();
+  const navigate = useNavigate();
+  const node = graphData.nodes.find((n: Node) => n.label === decodeURIComponent(nodeName || ''));
+
+  // Set selected node when component mounts
+  useEffect(() => {
+    if (node) {
+      setSelectedNode(node);
+    }
+  }, [node, setSelectedNode]);
+
+  if (!node) {
+    return (
+      <div className="h-screen w-full bg-[#020617] text-white flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-4xl font-bold mb-4">노드를 찾을 수 없습니다</h1>
+          <button
+            onClick={() => navigate('/graph')}
+            className="px-6 py-3 bg-indigo-500 hover:bg-indigo-600 rounded-xl font-bold transition-colors"
+          >
+            그래프로 돌아가기
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const handleSaveSubconcept = (subconcept: string) => {
+    const newNode: Node = {
+      id: generateUUID(),
+      label: subconcept,
+      status: 'new',
+      val: 20,
+      category: node.category,
+      description: `"${node.label}"의 하위 개념`
+    };
+
+    const newLinks: Link[] = [{ source: node.id, target: newNode.id }];
+    addNodesAndLinks([newNode], newLinks);
+  };
+
+  return (
+    <div className="h-screen w-full flex">
+      {/* Back button */}
+      <button
+        onClick={() => navigate('/graph')}
+        className="absolute top-4 left-4 z-50 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold text-sm border border-slate-700 transition-colors"
+      >
+        ← 그래프로 돌아가기
+      </button>
+
+      {/* Node Page - Left Side */}
+      <div className="flex-1 overflow-hidden">
+        <NodePage node={node} />
+      </div>
+
+      {/* Node Chatbot - Right Side */}
+      <div className="w-[400px] border-l border-slate-800">
+        <NodeChatbot node={node} onSaveSubconcept={handleSaveSubconcept} />
+      </div>
+    </div>
   );
 }

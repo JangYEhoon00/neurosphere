@@ -2,13 +2,20 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { AnalysisResult, QuizData, MetaResult, ChatMessage } from "../utils/types";
 
-const apiKey = import.meta.env.VITE_GEMINI_API_KEY || '';
-const ai = new GoogleGenAI({ apiKey });
-
 const modelId = "gemini-2.0-flash-exp";
+
+// Helper function to get AI instance with API key
+const getAI = () => {
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+  if (!apiKey) {
+    throw new Error('API key is missing. Please provide a valid API key.');
+  }
+  return new GoogleGenAI({ apiKey });
+};
 
 export const analyzeConcept = async (text: string): Promise<AnalysisResult | null> => {
   try {
+    const ai = getAI();
     const response = await ai.models.generateContent({
       model: modelId,
       contents: `User Question: "${text}"
@@ -60,6 +67,7 @@ export const analyzeConcept = async (text: string): Promise<AnalysisResult | nul
 
 export const generateQuiz = async (concept: string): Promise<QuizData | null> => {
   try {
+    const ai = getAI();
     const response = await ai.models.generateContent({
       model: modelId,
       contents: `Create a challenging multiple-choice question about the concept: "${concept}". (In Korean, Plain Text only)`,
@@ -92,6 +100,7 @@ export const generateQuiz = async (concept: string): Promise<QuizData | null> =>
 
 export const evaluateMetaCognition = async (concept: string, explanation: string): Promise<MetaResult | null> => {
   try {
+    const ai = getAI();
     const response = await ai.models.generateContent({
       model: modelId,
       contents: `The user is explaining the concept "${concept}" to test their understanding.
@@ -126,6 +135,7 @@ export const evaluateMetaCognition = async (concept: string, explanation: string
 
 export const chatWithBot = async (messages: ChatMessage[], activeSubconcept?: string): Promise<{ answer: string; subconcepts: string[] } | null> => {
   try {
+    const ai = getAI();
     const history = messages.map(m => `${m.sender}: ${m.content}`).join('\n');
     const context = activeSubconcept ? `Context: The user is asking about the subconcept "${activeSubconcept}".` : '';
     

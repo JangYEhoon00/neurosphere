@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Mic, HelpCircle, ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { Node, GraphData, ScreenState } from '../utils/types';
 
 interface NodeDetailPanelProps {
@@ -34,23 +34,6 @@ export const NodeDetailPanel = ({
           {selectedNode.description || "설명이 없습니다."}
         </p>
       </div>
-      
-      <div className="grid grid-cols-2 gap-3">
-        <button 
-          onClick={() => setScreen('metacheck')}
-          className="py-3 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl font-bold text-sm border border-slate-700 transition-all duration-300 flex flex-col items-center justify-center gap-2 hover:border-slate-500"
-        >
-          <Mic className="w-4 h-4 text-emerald-400" /> 
-          <span>말하기 (메타인지)</span>
-        </button>
-        <button 
-          onClick={startQuiz}
-          className="py-3 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl font-bold text-sm border border-slate-700 transition-all duration-300 flex flex-col items-center justify-center gap-2 hover:border-slate-500"
-        >
-          <HelpCircle className="w-4 h-4 text-amber-400" /> 
-          <span>퀴즈 풀기</span>
-        </button>
-      </div>
     </div>
 
     <div className="border-t border-slate-800 pt-6">
@@ -62,8 +45,8 @@ export const NodeDetailPanel = ({
             const targetId = l.source === selectedNode.id ? l.target : l.source;
             const targetNode = graphData.nodes.find(n => n.id === targetId);
             return targetNode ? (
-              <button 
-                key={i} 
+              <button
+                key={i}
                 onClick={() => setSelectedNode(targetNode)}
                 className="w-full text-left p-3 rounded-lg bg-slate-800/30 hover:bg-slate-800 border border-slate-800 hover:border-slate-600 transition-all duration-300 flex items-center justify-between group"
               >

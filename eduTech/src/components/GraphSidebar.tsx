@@ -75,16 +75,6 @@ export const GraphSidebar = ({
             />
           ))}
         </div>
-
-        <div className="p-4 border-t border-slate-800 bg-slate-900/50">
-          <div className="flex justify-between text-xs text-slate-500 font-bold mb-2">
-            <span>MEMORY STATUS</span>
-            <span>82%</span>
-          </div>
-          <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
-            <div className="bg-indigo-500 h-full w-[82%] rounded-full" />
-          </div>
-        </div>
       </div>
     </div>
   );

@@ -18,7 +18,7 @@ export const HomeScreen = ({ setScreen }: HomeScreenProps) => (
       </div>
 
       <h1 className="text-5xl md:text-7xl font-black tracking-tight mb-6 text-white drop-shadow-2xl animate-smooth-slide-up" style={{animationDelay: '0.1s'}}>
-        Second Brain <span className="text-indigo-500">OS</span>
+        NeuroSphere <span className="text-indigo-500">OS</span>
       </h1>
       <p className="text-slate-400 text-lg mb-12 max-w-lg leading-relaxed animate-smooth-slide-up" style={{animationDelay: '0.2s'}}>
         당신의 지식을 3차원 우주로 시각화하세요.<br/>
